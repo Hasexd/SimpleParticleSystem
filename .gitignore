@@ -45,3 +45,5 @@ core           # Core dumps (Unix/Linux)
 
 bin/
 bin-int/
+
+!premake/premake5.exe
