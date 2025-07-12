@@ -24,11 +24,22 @@
 
 #define igGetIO igGetIO_Nil
 
+
+#include "ParticleSystem.h"
+
+typedef struct
+{
+	const char* FilePath;
+	GLenum Type;
+} Shader;
+
 typedef struct
 {
 	GLFWwindow* Window;
 	uint32_t Width;
 	uint32_t Height;
+	Vec4 BackgroundColor;
+	ParticleSystem* PSystem;
 } App;
 
 void AppInit(App* app, const char* title, uint32_t width, uint32_t height);

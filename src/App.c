@@ -19,6 +19,72 @@ static void GLFWResizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+static void CompileShaders(Shader shaders[], uint32_t shaderCount, GLuint shaderProgram)
+{
+    for (size_t i = 0; i < shaderCount; i++)
+    {
+        GLuint shader = glCreateShader(shaders[i].Type);
+
+        if (!shader)
+        {
+	        printf("Shader creation failed for %s\n", shaders[i].FilePath);
+			continue;
+        }
+
+		FILE* file = fopen(shaders[i].FilePath, "r");
+
+        if (!file)
+        {
+            printf("Failed to open shader file: %s\n", shaders[i].FilePath);
+            glDeleteShader(shader);
+            continue;
+        }
+
+        fseek(file, 0, SEEK_END);
+        long fileSize = ftell(file);
+        fseek(file, 0, SEEK_SET);
+
+        char* shaderSource = malloc(fileSize + 1);
+        if (!shaderSource)
+        {
+            printf("Failed to allocate memory for shader source: %s\n", shaders[i].FilePath);
+            fclose(file);
+            glDeleteShader(shader);
+            continue;
+        }
+
+		fread(shaderSource, 1, fileSize, file);
+        shaderSource[fileSize] = '\0';
+        fclose(file);
+
+		const char* shaderSourcePtr = shaderSource;
+		glShaderSource(shader, 1, &shaderSourcePtr, NULL);
+        glCompileShader(shader);
+
+        GLint isCompiled = 0;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
+
+        if (isCompiled == GL_FALSE)
+        {
+	        GLint maxLength = 0;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+            char* infoLog = malloc(maxLength);
+            glGetShaderInfoLog(shader, maxLength, &maxLength, infoLog);
+
+            printf("Shader compilation failed for %s: %s\n", shaders[i].FilePath, infoLog);
+
+			free(infoLog);
+            free(shaderSource);
+            glDeleteShader(shader);
+
+            continue;
+        }
+		free(shaderSource);
+		glAttachShader(shaderProgram, shader);
+        glDeleteShader(shader);
+    }
+}
 
 void AppInit(App* app, const char* title, uint32_t width, uint32_t height) 
 {
@@ -43,6 +109,7 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
     app->Window = glfwCreateWindow(((int)width), (int)(height), title, NULL, NULL);
     app->Width = width;
     app->Height = height;
+	app->BackgroundColor = (Vec4){ 0.f, 0.f, 0.f, 1.f };
 
 
 
@@ -79,13 +146,32 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
 	ImGui_ImplOpenGL3_Init("#version 450");
 
     igStyleColorsDark(NULL);
+
+
+    app->PSystem = malloc(sizeof(ParticleSystem));
+
+	ParticleProps props =
+    {
+		.Position = {0.f, 0.f},
+        .VelocityMin = {-0.1f, -0.1f},
+        .VelocityMax = {0.1f, 0.1f},
+        .SizeMin = {0.01f, 0.01f},
+        .SizeMax = {0.05f, 0.05f},
+        .LifeTimeMin = 1.f,
+        .LifeTimeMax = 3.f,
+        .BirthColor = {1.f, 1.f, 1.f},
+		.DeathColor = {0.f, 0.f, 0.f}
+    };
+
+    ParticleSystemInit(app->PSystem, &props, 100);
 }
 
 void AppRun(const App* app)
 {
-    glClearColor(0.5f, 0.7f, 1.f, 1.f);
+
     while (g_AppIsRunning) 
     {
+        glClearColor(app->BackgroundColor.X, app->BackgroundColor.Y, app->BackgroundColor.Z, app->BackgroundColor.Z);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glfwPollEvents();
@@ -94,7 +180,12 @@ void AppRun(const App* app)
 		ImGui_ImplGlfw_NewFrame();
         igNewFrame();
 
-        igBegin("Test", NULL, 0);
+        igBegin("Particle values", NULL, 0);
+
+
+        igColorEdit3("Particle Birth Color", &app->PSystem->Props.BirthColor.X, 0);
+		igColorEdit3("Particle Death Color", &app->PSystem->Props.DeathColor.X, 0);
+		igColorEdit3("Background Color", &app->BackgroundColor.X, 0);
 
         igEnd();
 
@@ -113,6 +204,9 @@ void AppRun(const App* app)
 
 void AppShutdown(const App* app)
 {
+	ParticleSystemShutdown(app->PSystem);
+	free(app->PSystem);
+
     ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
     igDestroyContext(NULL);
