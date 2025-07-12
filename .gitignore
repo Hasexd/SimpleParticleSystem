@@ -42,3 +42,6 @@ bin/
 *.d            # Dependency files
 core           # Core dumps (Unix/Linux)
 *.dSYM/        # Debug symbols (macOS)
+
+bin/
+bin-int/
