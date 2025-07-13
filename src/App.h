@@ -40,6 +40,7 @@ typedef struct
 	uint32_t Height;
 	Vec4 BackgroundColor;
 	ParticleSystem* PSystem;
+	GLuint ShaderProgram;
 } App;
 
 void AppInit(App* app, const char* title, uint32_t width, uint32_t height);

@@ -3,6 +3,12 @@
 
 
 static bool g_AppIsRunning = true;
+static Shader g_Shaders[] =
+{
+    {"shaders/shader.glsl.frag", GL_FRAGMENT_SHADER },
+	{ "shaders/shader.glsl.vert", GL_VERTEX_SHADER }
+};
+static uint32_t g_ShaderCount = 2;
 
 static void GLFWErrorCallback(int error, const char* description) 
 {
@@ -19,6 +25,17 @@ static void GLFWResizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+static void GLFWCursorPosCallback(GLFWwindow* window, double x, double y) 
+{
+	const App* app = (App*)glfwGetWindowUserPointer(window);
+
+    if (app)
+    {
+        app->PSystem->Props.Position.X = (float)x;
+        app->PSystem->Props.Position.Y = (float)y;
+    }
+}
+
 static void CompileShaders(Shader shaders[], uint32_t shaderCount, GLuint shaderProgram)
 {
     for (size_t i = 0; i < shaderCount; i++)
@@ -31,7 +48,7 @@ static void CompileShaders(Shader shaders[], uint32_t shaderCount, GLuint shader
 			continue;
         }
 
-		FILE* file = fopen(shaders[i].FilePath, "r");
+		FILE* file = fopen(shaders[i].FilePath, "rb");
 
         if (!file)
         {
@@ -122,8 +139,10 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
     glfwMakeContextCurrent(app->Window);
     gladLoadGL();
 
+    glfwSetWindowUserPointer(app->Window, app);
     glfwSetWindowCloseCallback(app->Window, GLFWWindowCloseCallback);
 	glfwSetFramebufferSizeCallback(app->Window, GLFWResizeCallback);
+    glfwSetCursorPosCallback(app->Window, GLFWCursorPosCallback);
 
     glfwSwapInterval(1);
 
@@ -164,6 +183,12 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
     };
 
     ParticleSystemInit(app->PSystem, &props, 100);
+
+    app->ShaderProgram = glCreateProgram();
+    CompileShaders(g_Shaders, g_ShaderCount, app->ShaderProgram);
+
+    glLinkProgram(app->ShaderProgram);
+    glUseProgram(app->ShaderProgram);
 }
 
 void AppRun(const App* app)
