@@ -84,7 +84,7 @@ static void CompileShaders(ShaderInfo shadersInfo[], uint32_t shaderCount, GLuin
     }
 }
 
-static mat4 CreateTransformMatrix(Vec2 position, Vec2 size, float rotation)
+static mat4 CreateTransformMatrix(Vec2 position, float size, float rotation)
 {
     mat4 scaleMatrix = mat4_create();
     mat4 rotateMatrix = mat4_create();
@@ -94,8 +94,7 @@ static mat4 CreateTransformMatrix(Vec2 position, Vec2 size, float rotation)
     rotateMatrix = mat4_identity(rotateMatrix);
     translateMatrix = mat4_identity(translateMatrix);
 
-    // Scale
-    Vec3 scale3 = { size.X, size.Y, 1.0f };
+    Vec3 scale3 = { size, size, 1.0f };
     scaleMatrix = mat4_scale(scaleMatrix, scaleMatrix, &scale3.X);
 
     if (rotation != 0.0f)
@@ -223,7 +222,7 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
 	app->BackgroundColor = (Vec4){ 0.f, 0.f, 0.f, 1.f };
     app->IsRunning = true;
 	app->IsMousePressed = false;
-    app->EmitInterval = 0.05f;
+    app->EmitInterval = 0.01f;
 
     if (!app->Window) 
     {
@@ -269,8 +268,8 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
 		.Position = {0.f, 0.f},
         .VelocityMin = {-0.1f, -0.1f},
         .VelocityMax = {0.1f, 0.1f},
-        .SizeMin = {0.01f, 0.01f},
-        .SizeMax = {0.1f, 0.1f},
+        .SizeMin = 0.05f,
+        .SizeMax = 0.25f,
         .LifeTimeMin = 2.f,
         .LifeTimeMax = 5.f,
         .BirthColor = {1.f, 1.f, 1.f},

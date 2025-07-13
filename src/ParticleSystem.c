@@ -24,13 +24,11 @@ void ParticleSystemEmit(ParticleSystem* ps)
 	{
 		if (!ps->Particles[i].Active)
 		{
+
 			ps->Particles[i] = (Particle){
 				.Position = ps->Props.Position,
 				.LifeTime = RandomFloat(ps->Props.LifeTimeMin, ps->Props.LifeTimeMax),
-				.Size = {
-					RandomFloat(ps->Props.SizeMin.X, ps->Props.SizeMax.X),
-					RandomFloat(ps->Props.SizeMin.Y, ps->Props.SizeMax.Y)
-				},
+				.Size = RandomFloat(ps->Props.SizeMin, ps->Props.SizeMax),
 				.Velocity = {
 					RandomFloat(ps->Props.VelocityMin.X, ps->Props.VelocityMax.X),
 					RandomFloat(ps->Props.VelocityMin.Y, ps->Props.VelocityMax.Y)

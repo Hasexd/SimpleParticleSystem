@@ -13,7 +13,7 @@ typedef struct
 	Vec2 Position;
 	Vec2 Velocity;
 	float LifeTime;
-	Vec2 Size;
+	float Size;
 	bool Active;
 } Particle;
 
@@ -23,8 +23,8 @@ typedef struct
 	Vec2 Position;
 	Vec2 VelocityMin;
 	Vec2 VelocityMax;
-	Vec2 SizeMin;
-	Vec2 SizeMax;
+	float SizeMin;
+	float SizeMax;
 	float LifeTimeMin;
 	float LifeTimeMax;
 	Vec3 BirthColor;
