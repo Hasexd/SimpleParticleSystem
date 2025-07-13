@@ -8,6 +8,7 @@ workspace "SimpleParticleSystem"
     IncludeDir["GLFW"] = "vendor/glfw/include"
     IncludeDir["GLAD"] = "vendor/glad/include"
     IncludeDir["cimgui"] = "vendor/cimgui"
+    IncludeDir["mat4"] = "vendor/mat4/include"
     
     include "vendor/glfw"
     include "vendor/cimgui"
@@ -31,7 +32,8 @@ workspace "SimpleParticleSystem"
             "src",
             "%{IncludeDir.GLFW}",
             "%{IncludeDir.GLAD}",
-            "%{IncludeDir.cimgui}"
+            "%{IncludeDir.cimgui}",
+            "%{IncludeDir.mat4}"
         }
         
         links {

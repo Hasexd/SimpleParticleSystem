@@ -1,0 +1,38 @@
+{
+  "name": "mat4.c",
+  "version": "1.0.0",
+  "description": "gl-matrix's mat4, in c, split into smaller pieces",
+  "main": "index.js",
+  "scripts": {
+    "test": "test/build.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tmpvar/mat4.c"
+  },
+  "keywords": [
+    "gl-matrix",
+    "matrix",
+    "math",
+    "gl",
+    "mat4",
+    "mat4x4",
+    "4x4",
+    "mat",
+    "vector",
+    "maths"
+  ],
+  "license": "Zlib",
+  "contributors": [
+    "Brandon Jones <tojiro@gmail.com>",
+    "Colin MacKenzie IV <sinisterchipmunk@gmail.com>"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "dox": "git://github.com/hughsk/dox#api-context"
+  },
+  "bugs": {
+    "url": "https://github.com/tmpvar/mat4.c/issues"
+  },
+  "homepage": "https://github.com/tmpvar/mat4.c"
+}

@@ -13,7 +13,6 @@ typedef struct
 	float Z;
 } Vec3;
 
-
 typedef struct
 {
 	float X;

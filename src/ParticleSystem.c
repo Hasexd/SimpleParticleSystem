@@ -1,5 +1,9 @@
 #include "ParticleSystem.h"
 
+static float RandomFloat(float min, float max)
+{
+	return min + ((float)rand() / (float)RAND_MAX) * (max - min);
+}
 
 void ParticleSystemInit(ParticleSystem* ps, const ParticleProps* props, uint32_t maxParticles)
 {
@@ -9,29 +13,63 @@ void ParticleSystemInit(ParticleSystem* ps, const ParticleProps* props, uint32_t
 	ps->MaxParticles = maxParticles;
 
 	ps->Particles = malloc(sizeof(Particle) * maxParticles);
-	ps->ParticleCount = 0;
+
+	for (size_t i = 0; i < maxParticles; i++)
+		ps->Particles[i].Active = false;
 }
 
-void ParticleSystemSpawnParticle(ParticleSystem* ps)
+void ParticleSystemEmit(ParticleSystem* ps)
 {
-	if (ps->ParticleCount >= ps->MaxParticles)
+	for (uint32_t i = 0; i < ps->MaxParticles; i++)
 	{
-		printf("ParticleSystemSpawnParticle: Maximum particle count reached (%u)\n", ps->MaxParticles);
-		return;
+		if (!ps->Particles[i].Active)
+		{
+			ps->Particles[i] = (Particle){
+				.Position = ps->Props.Position,
+				.LifeTime = RandomFloat(ps->Props.LifeTimeMin, ps->Props.LifeTimeMax),
+				.Size = {
+					RandomFloat(ps->Props.SizeMin.X, ps->Props.SizeMax.X),
+					RandomFloat(ps->Props.SizeMin.Y, ps->Props.SizeMax.Y)
+				},
+				.Velocity = {
+					RandomFloat(ps->Props.VelocityMin.X, ps->Props.VelocityMax.X),
+					RandomFloat(ps->Props.VelocityMin.Y, ps->Props.VelocityMax.Y)
+				},
+				.Active = true
+			};
+			return;
+		}
 	}
 
-	const Particle particle =
-	{
-		.Position = ps->Props.Position,
-		.LifeTime = ps->Props.LifeTimeMin + (rand() / (float)RAND_MAX) * (ps->Props.LifeTimeMax - ps->Props.LifeTimeMin),
-		.Size = 
-		{
-			ps->Props.SizeMin.X + (rand() / (float)RAND_MAX) * (ps->Props.SizeMax.X - ps->Props.SizeMin.X),
-			ps->Props.SizeMin.Y + (rand() / (float)RAND_MAX) * (ps->Props.SizeMax.Y - ps->Props.SizeMin.Y)
-		}
-	};
+	printf("ParticleSystemEmit: All particle slots are active\n");
+}
 
-	ps->Particles[ps->ParticleCount++] = particle;
+void ParticleSystemUpdate(ParticleSystem* ps, float deltaTime)
+{
+	if (!ps || !ps->Particles)
+		return;
+
+	for (size_t i = 0; i < ps->MaxParticles; i++)
+	{
+		Particle* particle = &ps->Particles[i];
+
+		if (!particle->Active)
+			continue;
+
+		particle->LifeTime -= deltaTime;
+
+		if (particle->LifeTime <= 0.0f)
+		{
+			particle->Active = false;
+			continue;
+		}
+
+		particle->Velocity.X += ps->Props.Gravity.X * deltaTime;
+		particle->Velocity.Y += ps->Props.Gravity.Y * deltaTime;
+
+		particle->Position.X += particle->Velocity.X * deltaTime;
+		particle->Position.Y += particle->Velocity.Y * deltaTime;
+	}
 }
 
 
