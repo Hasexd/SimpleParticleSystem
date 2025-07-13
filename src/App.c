@@ -172,7 +172,6 @@ static void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
 
     if (app)
     {
-
         int width, height;
         glfwGetWindowSize(window, &width, &height);
 
@@ -183,14 +182,20 @@ static void GLFWCursorPosCallback(GLFWwindow* window, double x, double y)
 
 static void GLFWMouseButtonClickCallback(GLFWwindow* window, int button, int action, int mods) 
 {
-    const App* app = (App*)glfwGetWindowUserPointer(window);
+	App* const app = glfwGetWindowUserPointer(window);
 
-    if (app && action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT)
+    if (app && button == GLFW_MOUSE_BUTTON_LEFT)
     {
-        ParticleSystemEmit(app->PSystem);
-
-
-		printf("Particle emitted at position: (%f, %f)\n", app->PSystem->Props.Position.X, app->PSystem->Props.Position.Y);
+	    if (action == GLFW_PRESS)
+	    {
+            app->IsMousePressed = true;
+			app->LastEmitTime = (float)glfwGetTime();
+            ParticleSystemEmit(app->PSystem);
+	    }
+        else if (action == GLFW_RELEASE)
+        {
+            app->IsMousePressed = false;
+		}
     }
 }
 
@@ -217,6 +222,8 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
     app->Window = glfwCreateWindow((int)width, (int)height, title, NULL, NULL);
 	app->BackgroundColor = (Vec4){ 0.f, 0.f, 0.f, 1.f };
     app->IsRunning = true;
+	app->IsMousePressed = false;
+    app->EmitInterval = 0.05f;
 
     if (!app->Window) 
     {
@@ -227,6 +234,7 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
     glfwMakeContextCurrent(app->Window);
     gladLoadGL();
 
+    glfwSetInputMode(app->Window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
     glfwSetWindowUserPointer(app->Window, app);
     glfwSetWindowCloseCallback(app->Window, GLFWWindowCloseCallback);
 	glfwSetFramebufferSizeCallback(app->Window, GLFWResizeCallback);
@@ -288,7 +296,7 @@ void AppInit(App* app, const char* title, uint32_t width, uint32_t height)
 	app->ColorLoc = glGetUniformLocation(app->ShaderProgram, "uColor");
 }
 
-void AppRun(const App* app)
+void AppRun(App* app)
 {
 	float lastTime = (float)glfwGetTime();
     while (app->IsRunning) 
@@ -336,6 +344,17 @@ void AppRun(const App* app)
         }
 
         glBindVertexArray(0);
+
+        if (app->IsMousePressed)
+        {
+	        double timeNow = glfwGetTime();
+
+            if (timeNow - app->LastEmitTime >= app->EmitInterval)
+            {
+                ParticleSystemEmit(app->PSystem);
+                app->LastEmitTime = (float)timeNow;
+			}
+        }
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

@@ -42,6 +42,7 @@ typedef struct
 	ParticleSystem* PSystem;
 	GLuint ShaderProgram;
 	bool IsRunning;
+	bool IsMousePressed;
 
 	GLint ViewProjLoc;
 	GLint TransformLoc;
@@ -50,8 +51,11 @@ typedef struct
 	GLuint QuadVAO;
 	GLuint QuadVBO;
 	GLuint QuadEBO;
+
+	float LastEmitTime;
+	float EmitInterval;
 } App;
 
 void AppInit(App* app, const char* title, uint32_t width, uint32_t height);
-void AppRun(const App* app);
+void AppRun(App* app);
 void AppShutdown(const App* app);
